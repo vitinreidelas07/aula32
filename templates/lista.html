@@ -48,7 +48,6 @@
           <tr>
             <td>
               <a href="{{ url_for('editar', id=livro.id) }}" class="btn btn-warning btn-sm">Editar</a>
-              <a href="{{ url_for('deletar', id=livro.id) }}" class="btn btn-danger btn-sm">Deletar</a>
             </td>
             <td>{{ livro.titulo }}</td>
             <td>{{ livro.autor }}</td>
@@ -56,6 +55,9 @@
             <td>{{ livro.ano }}</td>
             <td>{{ livro.editora }}</td>
             <td>{{ livro.ativo }}</td>
+            <td>
+              <a href="{{ url_for('deletar', id=livro.id) }}" class="btn btn-danger btn-sm" onclick="return confirm('Tem certeza de que deseja deletar este livro?');">Deletar</a>
+            </td>         
           </tr>
           {% endfor %}
         </tbody>
