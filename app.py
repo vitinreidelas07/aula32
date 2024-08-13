@@ -3,6 +3,8 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 import pandas as pd
+from datetime import datetime
+from weather.routes import weather_bp  # Importando o Blueprint
 
 
 app = Flask(__name__)
@@ -45,6 +47,16 @@ class User(db.Model, UserMixin):
     def __init__(self, username, password):
         self.username = username
         self.password = bcrypt.generate_password_hash(password).decode('utf-8')
+
+class Reservation(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    book_id = db.Column(db.Integer, db.ForeignKey('livro.id'), nullable=False)
+    date_reserved = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
+    def __init__(self, user_id, book_id):
+        self.user_id = user_id
+        self.book_id = book_id
     
 
 
@@ -71,6 +83,61 @@ with app.app_context():
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
+
+
+@app.route("/dashboard")
+@login_required
+def dashboard():
+    # Totalizadores
+    total_livros = Livro.query.count()
+    total_usuarios = User.query.count()
+    total_reservas = Reservation.query.count()
+
+    # Dados para os gráficos
+    livros_por_autor = db.session.query(Livro.autor, db.func.count(Livro.id)).group_by(Livro.autor).all()
+    livros_por_ano = db.session.query(Livro.ano, db.func.count(Livro.id)).group_by(Livro.ano).all()
+    livros_por_editora = db.session.query(Livro.editora, db.func.count(Livro.id)).group_by(Livro.editora).all()
+
+    return render_template("dashboard.html",
+                           total_livros=total_livros,
+                           total_usuarios=total_usuarios,
+                           total_reservas=total_reservas,
+                           livros_por_autor=livros_por_autor,
+                           livros_por_ano=livros_por_ano,
+                           livros_por_editora=livros_por_editora)
+
+
+
+@app.route("/minhas_reservas")
+@login_required
+def minhas_reservas():
+    reservas = Reservation.query.filter_by(user_id=current_user.id).all()
+    return render_template("minhas_reservas.html", reservas=reservas)
+
+
+
+@app.route("/fazer_reserva/<int:book_id>")
+@login_required
+def fazer_reserva(book_id):
+    # Verifica se o livro já foi reservado pelo usuário
+    reserva_existente = Reservation.query.filter_by(user_id=current_user.id, book_id=book_id).first()
+    if reserva_existente:
+        flash("Você já reservou este livro.")
+        return redirect(url_for("reservar"))
+
+    # Criação de uma nova reserva
+    nova_reserva = Reservation(user_id=current_user.id, book_id=book_id)
+    db.session.add(nova_reserva)
+    db.session.commit()
+    flash("Reserva realizada com sucesso!")
+    return redirect(url_for("reservar"))
+
+
+@app.route("/reservar", methods=["GET"])
+@login_required
+def reservar():
+    livros = Livro.query.all()  # Pega todos os livros
+    return render_template("reservar.html", livros=livros)
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -145,5 +212,9 @@ def deletar(id):
 def logout():
     logout_user()
     return redirect(url_for("login"))
+
+# Registrando o Blueprint
+app.register_blueprint(weather_bp)
+
 
 app.run(debug=True)

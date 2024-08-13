@@ -1,0 +1,123 @@
+htmlCopiar código
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container mt-5">
+        <h2>Dashboard</h2>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card text-white bg-primary mb-3">
+                    <div class="card-header">Total de Livros</div>
+                    <div class="card-body">
+                        <h5 class="card-title">{{ total_livros }}</h5>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-white bg-success mb-3">
+                    <div class="card-header">Total de Usuários</div>
+                    <div class="card-body">
+                        <h5 class="card-title">{{ total_usuarios }}</h5>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-white bg-warning mb-3">
+                    <div class="card-header">Total de Reservas</div>
+                    <div class="card-body">
+                        <h5 class="card-title">{{ total_reservas }}</h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h3>Gráficos</h3>
+        <div class="row">
+            <div class="col-md-6">
+                <canvas id="graficoLivrosPorAutor"></canvas>
+            </div>
+            <div class="col-md-6">
+                <canvas id="graficoLivrosPorAno"></canvas>
+            </div>
+            <div class="col-md-6">
+                <canvas id="graficoLivrosPorEditora"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var ctx1 = document.getElementById('graficoLivrosPorAutor').getContext('2d');
+        var graficoLivrosPorAutor = new Chart(ctx1, {
+            type: 'bar',
+            data: {
+                labels: {{ livros_por_autor | map(attribute=0) | list | safe }},
+                datasets: [{
+                    label: 'Livros por Autor',
+                    data: {{ livros_por_autor | map(attribute=1) | list | safe }},
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        var ctx2 = document.getElementById('graficoLivrosPorAno').getContext('2d');
+        var graficoLivrosPorAno = new Chart(ctx2, {
+            type: 'bar',
+            data: {
+                labels: {{ livros_por_ano | map(attribute=0) | list | safe }},
+                datasets: [{
+                    label: 'Livros por Ano',
+                    data: {{ livros_por_ano | map(attribute=1) | list | safe }},
+                    backgroundColor: 'rgba(255, 206, 86, 0.2)',
+                    borderColor: 'rgba(255, 206, 86, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        var ctx3 = document.getElementById('graficoLivrosPorEditora').getContext('2d');
+        var graficoLivrosPorEditora = new Chart(ctx3, {
+            type: 'bar',
+            data: {
+                labels: {{ livros_por_editora | map(attribute=0) | list | safe }},
+                datasets: [{
+                    label: 'Livros por Editora',
+                    data: {{ livros_por_editora | map(attribute=1) | list | safe }},
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Previsão do Tempo</title>
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+    />
+  </head>
+  <body>
+    <div class="container mt-5">
+      <h2>Previsão do Tempo</h2>
+      <form method="POST">
+        <div class="form-group">
+          <label for="city">Cidade</label>
+          <input
+            type="text"
+            class="form-control"
+            id="city"
+            name="city"
+            required
+          />
+        </div>
+        <button type="submit" class="btn btn-primary">Buscar</button>
+      </form>
+      {% if weather_data %}
+      <div class="mt-5">
+        <h3>Clima em {{ weather_data.city }}</h3>
+        <p>Temperatura: {{ weather_data.temperature }}°C</p>
+        <p>Descrição: {{ weather_data.description }}</p>
+        <img
+          src="http://openweathermap.org/img/wn/{{ weather_data.icon }}@2x.png"
+          alt="Weather icon"
+        />
+      </div>
+      {% endif %}
+    </div>
+  </body>
+</html>
+
